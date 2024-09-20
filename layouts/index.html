@@ -1,0 +1,28 @@
+{{ define "main" }}
+  <div class="container">
+    <div class="sidebar fixed">
+      <nav>
+        <ul class="site-menu">
+          {{ partial "site_menu.html" . }}
+        </ul>
+      </nav>
+    </div>
+
+    <div class="post-content">
+
+      <div class="section-header" id="awayto-dev-docs">
+        <h1>Awayto Developer Documentation</h1>
+        <ul>
+          <li><a href="docs/0.1.0">0.1.0</a></li>
+          <li><a href="docs/0.2.0">0.2.0</a></li>
+          <li><a href="docs/0.3.0">0.3.0</a></li>
+        </ul>
+      </div>
+
+      {{ partial "index.md" | markdownify }}
+    
+    </div>
+  </div>
+
+  {{ partial "footer.html" . }}
+{{ end }}
