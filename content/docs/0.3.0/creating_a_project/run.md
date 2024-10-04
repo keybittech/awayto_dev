@@ -5,19 +5,41 @@ weight: 2
 
 ### [&#128279;](#run-the-project) Run the Project
 
-Awayto primarily runs its processes in Docker containers. Upon installation, these containers are built and started for you. In normal development, you may need to stop and start the stack or various parts of it.
+#### Run Docker containers
 
-```shell
-# Stop
-docker compose down
+Docker is used for Redis, Postgres, Coturn, and Goetnberg.
 
-# Start
-docker compose up -d --build
+```
+make docker_up
 ```
 
-Review the `docker-compose.yaml` file in the main directory to see what services are started. To rebuild a single service, simply append the service name.
+#### Build the project
 
-```shell
-# Rebuild
-docker compose up -d --build app
 ```
+make build
+```
+
+#### Develop the landing site
+
+```
+make landing_dev
+```
+
+#### Develop the app front end
+
+```
+make ts_dev
+```
+
+#### Develop the app back end
+
+```
+make go_dev
+```
+
+If the ts_dev server is also running, the go_dev server will proxy that for local development, instead of the front end static build folder.
+
+#### Visit the site
+
+Access the project at [https://localhost:7443](https://localhost:7443).
+

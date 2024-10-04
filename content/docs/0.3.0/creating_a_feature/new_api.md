@@ -5,76 +5,82 @@ weight: 3
 
 ### [&#128279;](#defining-api-endpoints) Defining API Endpoints
 
-Endpoint definitions are one of the most powerful abstractions available, due to their expressivity, simplicity, and far-reaching effects. After hooking up our definition, we get to benefit from automated server-side request validation, auto-generated React hooks, and support for an API handler that we can customize. 
+Protobufs are used to define APIs, using the `service` and `rpc` constructs, along with custom- and Google-based protos for HTTP related features. For each `rpc` defined in a `service` proto, a corresponding handler file needs to be created in a `/go/pkg/handlers` file. See existing handlers for examples. 
 
-In order to define an endpoint, we can expand the same core type file we created for our type, `/core/src/types/todo.ts`. You can of course create stand-alone APIs that aren't related to a type; just follow the conventions here in a new file in the core types folder.
+Existing protos use a standard method of defining service RPCs and then the input/output messages for each individual RPC. Care must be taken when designing an API in such a way that it doesn't become too large and cumbersome. Input and output messages should be simple, containing a few properties each, with specific purposes in mind.
 
-- The default export of a `/core/src/types` file is treated as an object of endpoint definitions. You can see how the exports are used and merged in the [core type index]({{< param "v2Repo" >}}/tree/main/core/src/types/index.ts).
-- All top-level definition attributes (`kind`, `url`, `method`, etc.) must be defined. Endpoint definitions use Typescript's `as const` statement, therefore all definitions must be alike in structure. `as const` lets us use our object at runtime, while establishing narrow types for our overall usage with Typescript related features. In other words, if we had only defined the following `export default` construct as a Typescript type, we wouldn't get to use any of its details at runtime. Instead, creating an object that uses `as const` is more or less the best of both worlds for our needs. 
 
-```typescript
-import { ApiOptions, EndpointType } from './api';
-import { Void } from '../util';
+#### External Properties
 
-// Typescript type resides here, then we export the API definition...
+Use of Google-based proto annotations can be researched online, as well as studied in existing protos, and include:
 
-export default {
-  postTodo: {
-    kind: EndpointType.MUTATION,
-    url: 'todos',
-    method: 'POST',
-    opts: {} as ApiOptions,
-    queryArg: { task: '' as string },
-    resultType: { id: '' as string }
-  },
-  putTodo: {
-    kind: EndpointType.MUTATION,
-    url: 'todos',
-    method: 'PUT',
-    opts: {} as ApiOptions,
-    queryArg: { done: true as boolean },
-    resultType: { success: true as boolean }
-  },
-  getTodos: {
-    kind: EndpointType.QUERY,
-    url: 'todos',
-    method: 'GET',
-    opts: {} as ApiOptions,
-    queryArg: {} as Void,
-    resultType: [] as ITodo[]
-  },
-  getTodoById: {
-    kind: EndpointType.QUERY,
-    url: 'todos/:id',
-    method: 'GET',
-    opts: {} as ApiOptions,
-    queryArg: { id: '' as string },
-    resultType: {} as ITodo
-  },
-  deleteTodo: {
-    kind: EndpointType.MUTATION,
-    url: 'todos/:id',
-    method: 'DELETE',
-    opts: {} as ApiOptions,
-    queryArg: { id: '' as string },
-    resultType: { success: true as boolean }
+- `google/protobuf/struct.proto`
+- `google/api/annotations.proto`
+- `google/api/field_behavior.proto`
+
+#### Custom Properties
+
+Custom properties are further defined in the `util.proto`:
+
+**cache**: By default, the server will cache all GET requests for 180 seconds.
+- DEFAULT - Default behavior.
+- SKIP - Never cache endpoint responses.
+- STORE - Permanently cache response in Redis, and use that on subsequent GETs.
+
+**cache_duration**: Seconds. Used to override default 180 second cache duration for GET requests.
+
+**throttle**: Todo. Throttles endpoint for 10 requests per n seconds.
+
+**siteRole**: Limit access to a particular site role. Check `util.proto` for current values.
+
+Following our example, we might create a service for our Todos like this:
+
+```proto
+service TodoService {
+  rpc PostTodo(PostTodoRequest) returns (PostTodoResponse) {
+    option (google.api.http) = {
+      post: "/v1/todos"
+      body: "*"
+    };
   }
-} as const;
+
+  rpc GetTodos(GetTodosRequest) returns (GetTodosResponse) {
+    option (google.api.http) = {
+      get: "/v1/todos"
+    };
+  }
+
+  rpc DeleteTodo(DeleteTodoRequest) returns (DeleteTodoResponse) {
+    option (google.api.http) = {
+      delete: "/v1/todos/{id}"
+    };
+  }
+}
 ```
 
-- `kind`: MUTATION or QUERY. In practice QUERY is used for all GET requests. MUTATION is used for everything else. When we use MUTATION, our usage of the database inside API handlers is automatically wrapped in a transaction.
-- `url`: URLs are supported with common path and query param usage; these properties must be provided in the queryArgs object and passed on calling the endpoint. For example, `todos/:id` would expect us to have `id` listed in `queryArgs`. Alternatively we could write `todos?id=:id`, depending on your needs. In the API handler, these properties are available with `props.event.pathParameters` or `props.event.queryParameters`, respectively.
-- `method`: GET, PUT, POST, DELETE
-- `opts`: Optional configurations. Listed [here](#api-options).
-- `queryArg`: A combination of path, query, and request body parameters. This determines what we require to make a request from the front-end, and what is available to us in the API's handler.
-- `resultType`: The API handler must return something matching this type, or throw an error.
-- A negative side-effect of using `as const` requires us to define types for each property in `queryArg` and `resultType` (i.e. `id: '' as string`). This is so our IDE can handle both generic and narrow typing of the endpoint definitions; this is important when we go to build and use hooks and API handlers.
-- Defining `{} as Void` for `queryArg` or `resultType` will supply API handlers and React hooks with the correct types when no parameters are necessary.
+And its corresponding input/output objects:
 
-#### Extend the Type exports
+```proto
+message PostTodoRequest {
+  ITodo todo = 1 [(google.api.field_behavior) = REQUIRED];
+}
 
-Once you've created your API definition, you need to hook it in to the merged API definitions. You can find the merged definitions in `/core/src/types/index.ts`.
+message PostTodoResponse {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  bool done = 2 [(google.api.field_behavior) = REQUIRED];
+}
 
-- Import your new type file
-- Add its reference to `siteApiRef`
-- Export the reference from the index
+message GetTodosRequest {}
+
+message GetTodosResponse {
+  repeated ITodo todos = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteTodoRequest {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteTodoResponse {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+```

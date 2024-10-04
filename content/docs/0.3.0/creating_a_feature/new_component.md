@@ -5,24 +5,18 @@ weight: 5
 
 ### [&#128279;](#creating-a-component) Creating a Component
 
-All of the front-end elements of the platform reside in the `/app` folder. Within, you will find three important folders as well as the `Dockerfile` which builds the `app` service. 
-
-- `/landing` is a Hugo application, the contents of which you are reading right now!
-- `/server` contains Nginx configurations for local or deployed environments.
-- `/website` is a React application, built with customized Craco configuration.
-
-For this exercise we will just focus on the `/app/website` folder, in order to make a front-end component which can utilize our Todos API. Begin by creating a new file in `/app/website/src/modules/example/Todos.tsx`. The UI is implemented primarily using React functional components.  Here we'll provide a sample component using basic React constructs with Material-UI, then describe the important aspects:
+React components live inside the `/ts/src/modules` folder. Begin by creating a new file in `/ts/src/modules/example/Todos.tsx`. The UI is implemented primarily using React functional components. Here we'll provide a sample component using basic React constructs with Material-UI:
 
 ```typescript
 import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 
-import { sh, useUtil } from 'awayto/hooks';
+import { siteApi, useUtil } from 'awayto/hooks';
 
 export function Todos (): React.JSX.Element {
 
   const { setSnack } = useUtil();
-  const [postTodo] = sh.usePostTodoMutation();
+  const [postTodo] = siteApi.usePostTodoMutation();
 
   const [todo, setTodo] = useState({
     task: ''

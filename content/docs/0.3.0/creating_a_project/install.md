@@ -5,22 +5,21 @@ weight: 1
 
 ### [&#128279;](#installation) Installation
 
-Clone [the repo](https://github.com/jcmccormick/wc).
+#### Get the code from the repo
 
-```shell
-git clone https://github.com/jcmccormick/wc.git && cd wc
+```
+git clone {{< param "v3Repo" >}}
 ```
 
-Set the awayto binary to be executable.
+#### Create an .env file
 
-```shell
-chmod +x ./awayto
+```
+cp .env.template .env
 ```
 
-Run the first-time developer setup. This will generate the necessary configurations and artifacts to run the stack locally.
+At the very least, these properties should be set as per your project:
+- PROJECT_PREFIX - identifier used in resource creation, best to not use any special characters out of precaution as the identifier is used across the stack for various purposes with varying limitations
+- PROJECT_TITLE - literal text used for headers/titles
+- DOMAIN_NAME - deployed domain name
+- ADMIN_EMAIL - used for certbot registration
 
-```shell
-./awayto dev first-run
-```
-
-After this process completes, the platform will be running on a number of docker containers spawned locally on your system. If you visit https://localhost in your browser, you should see this page you're reading!

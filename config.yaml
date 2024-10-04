@@ -6,8 +6,8 @@ enableRobotsTXT: true
 Params:
   appURL: https://awayto.exchange 
   v1Repo: https://github.com/keybittech/awayto
-  v2Repo: https://github.com/jcmccormick/wc
-  v3Repo: https://github.com/jcmccormick
+  v2Repo: https://github.com/keybittech/awayto-v2
+  v3Repo: https://github.com/keybittech/awayto-v3
 
 menu:
   main:

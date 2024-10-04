@@ -10,7 +10,7 @@ All database scripts for the platform are stored in the `/db/scripts` folder. Th
 New database scripts can be deployed in various ways. After running the installation, you will have a Postgres container running on your system. You can log into the running Postgres instance by using the `dev db` CLI command.
 
 ```shell
-./awayto dev db
+make db
 
 # run SQL scripts
 CREATE TABLE ...
@@ -32,17 +32,16 @@ psql
 CREATE TABLE ...
 ```
 
-To connect to a deployed db, use the `util db` CLI command.
+To connect to a deployed db:
 
 ```shell
-./awayto util db
-# enter the name of your deployment
+make host_db
 
 # run SQL scripts
 CREATE TABLE ...
 ```
 
-As an example, we'll setup a basic Todo feature in our app. We'll make a new file in the scripts folder, `/db/scripts/c1-custom_tables.sh`. It's a shell file because this is the chosen method to enact the auto deployment when the Postgres container starts up for the first time. We'll put the following in our file, as well as run the SQL statement as shown in one of the methods above. Auditing columns are included on all tables.
+As an example, we'll setup a basic Todo feature in our app. We'll make a new file in the scripts folder, `/deploy/scripts/db/c1-custom_tables.sh`. It's a shell file because this is the chosen method to enact the auto deployment when the Postgres container starts up for the first time. We'll put the following in our file, as well as run the SQL statement as shown in one of the methods above. Auditing columns are included on all tables.
 
 ```bash
 #!/bin/bash
@@ -65,7 +64,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-'
 EOSQL
 ```
 
-You'll notice we nest our tables in the schema `dbtable_schema`. There is also `dbview_schema` and to this we will add a simple view to wrap our usage. Views are the primary way data will be queried when we get to creating our API functionality. We'll create another new file `/db/scripts/c1-custom_views.sh` with our view. Remember to also run the SQL script in the db container as described previously.
+You'll notice we nest our tables in the schema `dbtable_schema`. There is also `dbview_schema` and to this we will add a simple view to wrap our usage. Views are the primary way data will be queried when we get to creating our API functionality. We'll create another new file `/deploy/scripts/db/c1-custom_views.sh` with our view. Remember to also run the SQL script in the db container as described previously.
 
 ```bash
 #!/bin/bash
