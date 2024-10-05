@@ -5,9 +5,9 @@ weight: 1
 
 ### [&#128279;](#a-table-with-a-view) A Table with a View
 
-All database scripts for the platform are stored in the `/db/scripts` folder. They will be run the first time the db container runs while using an empty volume. For example, when you run the first time developer installation, a docker volume is created and, since it is empty, the Postgres docker installation will automatically run our database scripts for us. The scripts are named alphanumerically and will be run in that order.
+All database scripts for the platform are stored in the `/deploy/scripts/db` folder. They will be run the first time the db container runs while using an empty volume. For example, when you run the first time developer installation, a docker volume is created and, since it is empty, the Postgres docker installation will automatically run our database scripts for us. The scripts are named alphanumerically and will be run in that order.
 
-New database scripts can be deployed in various ways. After running the installation, you will have a Postgres container running on your system. You can log into the running Postgres instance by using the `dev db` CLI command.
+New database scripts can be deployed in various ways. After running the installation, you will have a Postgres container running on your system. You can log into the running Postgres instance by using the `make db` CLI command for the dev DB, or `make host_db` for a deployed setting.
 
 ```shell
 make db

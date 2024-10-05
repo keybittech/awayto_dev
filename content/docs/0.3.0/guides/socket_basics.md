@@ -5,7 +5,7 @@ weight: 3
 
 ### [&#128279;](#socket-basics) Socket Basics
 
-Real-time communications are supported by a standard Coturn container and a custom WebSocket Server implemented in a NodeJS container. In the React app, you will find corresponding elements which enable the use of voice, video, and text communications. The tree of our React app is constructed in such a way that, as authenticated users begin to render the layout, a React provider/context instantiates a long-lived WebSocket connection for use anywhere in the app. Using the WebSocket context, we get access to the most basic features of a socket connection, which follows a typical topic pub/sub implementation.
+Real-time communications are supported by a standard Coturn container and a custom WebSocket endpoint as part of the Go API. In the React app, you will find corresponding elements which enable the use of voice, video, and text communications. The tree of our React app is constructed in such a way that, as authenticated users begin to render the layout, a React provider/context instantiates a long-lived WebSocket connection for use anywhere in the app. Using the WebSocket context, we get access to the most basic features of a socket connection, which follows a typical topic pub/sub implementation.
 
 ```typescript
 type WebSocketContextType = {
@@ -91,19 +91,19 @@ export function UserChat({ chatId }: IProps): React.JSX.Element {
 }
 ```
 
-There is a lot we can accomplish with the `useWebSocketSubscribe` and it can be configured for any pub/sub related context. For a look at more advanced uses of the socket, review the [Call provider]({{< param "v2Repo" >}}/blob/main/app/website/src/modules/web_socket/WSCallProvider.tsx), [Text provider]({{< param "v2Repo" >}}/blob/main/app/website/src/modules/web_socket/WSTextProvider.tsx) and [Whiteboard component]({{< param "v2Repo" >}}/blob/main/app/website/src/modules/exchange/Whiteboard.tsx) to see how multiple actions can be utilized more fully, how to handle subscribers, and more.
+There is a lot we can accomplish with the `useWebSocketSubscribe` and it can be configured for any pub/sub related context. For a look at more advanced uses of the socket, review the [Call provider]({{< param "v3Repo" >}}/blob/main/ts/src/modules/web_socket/WSCallProvider.tsx), [Text provider]({{< param "v3Repo" >}}/blob/main/ts/src/modules/web_socket/WSTextProvider.tsx) and [Whiteboard component]({{< param "v3Repo" >}}/blob/main/ts/src/modules/exchange/Whiteboard.tsx) to see how multiple actions can be utilized more fully, how to handle subscribers, and more.
 
 #### Less Basic: Socket Authorization and Allowances
 
-The WebSocket protocol does not define any methods for securing the upgrade request necessary to establish a connection between server and client. However, authenticated users will have an ongoing session in our Express API. Therefore we can use it to ensure only authorized users can access the socket by using a ticketing system. Once the user is connected, the socket server can then handle its own requests in seeing which topics the user is allowed to connect to.
+The WebSocket protocol does not define any methods for securing the upgrade request necessary to establish a connection between server and client. However, authenticated users will have an ongoing session in our Go API. Therefore we can use it to ensure only authorized users can access the socket by using a ticketing system. Once the user is connected, the socket server can then handle its own requests in seeing which topics the user is allowed to connect to.
 
-In the API, we will find a dedicated set of [routes]({{< param "v2Repo" >}}/blob/main/api/src/routes/sock.ts) for use with the socket server. The socket auth flow is as follows:
+In 0.3.0, the WebSocket "server" is fully handled by the `/sock` [endpoint]({{< param "v3Repo" >}}/blob/main/go/pkg/api/sock.go) in the Go server, after receiving a `/ticket`: 
+
   - the browser makes a request to `/ticket`
-  - the API proxies this request to a ticket creation end point on the socket server, which is keeping track of currently connected subscribers and their tickets/allowances
   - the browser receives a `connectionId:authCode` style pairing from `/ticket` which it uses to make the upgrade request
-  - a request is made to the reverse proxy's `/sock` endpoint, configired as an UPGRADE and forwarded to the socket server
-  - the socket server checks the incoming `authCode` against what has been stored on the server, expiring the ticket
-  - the request is upgraded to a web socket connection and the browser can proceed to send messages using the `connectionId`
+  - a request is made to the `/sock` endpoint, configired as an UPGRADE and handled with goroutines
+  - the endpoint checks the incoming `authCode` against what has been stored on the server, expiring the ticket
+  - the browser can proceed to send messages using the `connectionId`, which are then routed internally
 
 After having connected, the client can use the `transmit` function described previously to send a  `'subscribe'` action, along with the desired topic. An abstracted example of this process is used in the `useWebSocketSubscribe` hook.
 
@@ -128,27 +128,11 @@ While subscribing to a topic, the socket server must ensure the user is allowed.
 </WSTextProvider>
 ```
 
-3. The text or call provider internally attempts to subscribe to our topicId, e.g. `exchange/text:${exchangeContext.exchangeId}`. The socket server is responsible for checking the users's allowances at the moment of subscription. This process comes together in the socket server's [subscribe]({{< param "v2Repo" >}}/blob/main/sock/events/subscribe.js) function.
+3. The text or call provider internally attempts to subscribe to our topicId, e.g. `exchange/text:${exchangeContext.exchangeId}`. The socket server is responsible for checking the users's allowances at the moment of subscription. This process is handled in the above referenced endpoint.
 
-4. At the start of subscribing, the socket server makes a request to `/api/allowances`. The API returns the list of booking ids which are relevant to the current user and attaches them to the `ws.subscriber.allowances` object.
+4. User allowances are maintained internally using custom logic pertaining to the related allowance. For example, the function `API.Handlers.Database.GetSocketAllowances` currently only cares about maintaining `Exchange` related socket connections, and does so with specific queries checking if the current user is related to the Exchange topic id they want to join. Other allowances would need to extend these queries and be handled in a similar fashion.
 
-5. A switch handler makes an arbitrary check to determine if the user has access to the topic id being requested. In the case of the booking/exchange system, this is very basic.
-
-```js
-export const exchangeHandler = (ws, parsed) => {
-
-  const [topic, handle] = parsed.topic.split(':');
-
-  switch(topic) {
-    case `exchange/${ExchangeActions.EXCHANGE_TEXT}`:
-    case `exchange/${ExchangeActions.EXCHANGE_CALL}`:
-    case `exchange/${ExchangeActions.EXCHANGE_WHITEBOARD}`:
-      return ws.subscriber.allowances.bookings.includes(handle);
-    default:
-      return false;
-  }
-}
-```
+5. A switch handler makes a check to determine if the user has access to the topic id being requested. In the case of the booking/exchange system, this is very basic.
 
 6. If the handler finds that the user is related to the booking id they are requesting for, the subscribe function continues on with all the wiring up of a user's socket connection.
 

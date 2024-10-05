@@ -14,16 +14,16 @@ To accomplish this, we use a mixture of some build-time scripting,the JavaScript
 - As part of our [CRACO configuration]({{< param "v2Repo" >}}/blob/main/app/website/craco.config.js), the function `checkWriteBuildFile` parses the structure of our `/app/website/src/modules` folder, and writes a manifest for all the components and contexts available to us. This manifest is stored in `/app/website/src/build.json`.
 - In our series of [React hooks]({{< param "v2Repo" >}}/blob/main/app/website/src/hooks), `useComponents` and `useContexts` use the manifest to load files when needed, and keep a local cache of downloaded components. 
 - By using the Proxy API, our hook allows us to download/use a component just by accessing it as a property of `useComponents` (or `useContexts`). `useContexts` will pick up any file ending with `Context`, so beware.
-- If a component doesn't exist, an empty div will be rendered instead. With advanced usage, we can feature-lock components from being used without running into compilation errors in the event a component isn't in the package.
+- If a component doesn't exist, an empty div will be rendered instead. With advanced usage, we can feature-lock components from being used without running into compilation errors in the event a component isn't in the file system.
 ```tsx
 import { useComponents } from 'awayto/hooks';
 
 export default SomeComponent() {
-  const { MyComponent, doesntExist } = useComponents();
+  const { MyComponent, DoesntExist } = useComponents();
 
   return <>
     <MyComponent /> {/* All good! */}
-    <doesntExist /> {/* This won't run anyway because the d isn't capitalized, which you knew, right? But if it were, it'd still be a plain old <div /> */}
+    <DoesntExist /> {/* This will just render an empty <div /> */}
   </>
 }
 ```

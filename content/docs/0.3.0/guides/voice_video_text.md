@@ -171,4 +171,4 @@ export default function GeneralCall () {
 }
 ```
 
-For our actual implementation and usage of the call and text providers, check out the [Exchange]({{< param "v2Repo" >}}/blob/main/app/website/src/modules/exchange/Exchange.tsx) module. There, we combine voice, video, text, as well as a collaborative socket driven canvas.
+For our actual implementation and usage of the call and text providers, check out the [Exchange]({{< param "v3Repo" >}}/blob/main/ts/src/modules/exchange/Exchange.tsx) module. There, we combine voice, video, text, as well as a collaborative socket driven canvas.
