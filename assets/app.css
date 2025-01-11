@@ -78,7 +78,7 @@ body {
   line-height: 1.8;
   color: var(--pro);
   word-break: break-word;
-  background: var(--white);
+  background-color: #azure;
   transition: background 0.4s ease-out;
 }
 
