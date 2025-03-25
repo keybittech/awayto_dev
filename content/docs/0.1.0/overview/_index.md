@@ -40,7 +40,7 @@ Any AWS tasks are performed on an AWS account with the Administrator role.
 
 - `npm run start-api` -- Starts just the api with the same above configuration.
 
-- `npm run start-local` -- Starts just the webapp with the `settings.local.env` configuration. We use AWS SAM to run the local API, this requires Docker. AWS SAM, while extremely convenient, has gone through some growing pains; so if you ever run into issues, ask on the [Discord](https://discord.gg/KzpcTrn5DQ). We use the `--warm-containers LAZY` option, so when your api starts make sure to make a couple requests to get the Lambda initialized.
+- `npm run start-local` -- Starts just the webapp with the `settings.local.env` configuration. We use AWS SAM to run the local API, this requires Docker. AWS SAM, while extremely convenient, has gone through some growing pains. We use the `--warm-containers LAZY` option, so when your api starts make sure to make a couple requests to get the Lambda initialized.
 
 - `npm run watch-api` -- Start a webpack watcher on just the api.
 

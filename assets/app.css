@@ -19,7 +19,7 @@
 
   --light: 255, 255, 255;
   --dark: 22, 22, 22;
-  --hljs-bg: #111;
+  --hljs-bg: #333;
 
   --safe-bottom: 0;
 }
@@ -606,7 +606,7 @@ img {
   font-family: Menlo, Monaco, 'Courier New', Courier, monospace;
   font-size: 0.8em;
   line-height: 1.5;
-  background: rgba(var(--dark), 0.06);
+  background: rgba(var(--light), 0.06);
   border-radius: 0.3rem;
 }
 

@@ -16,7 +16,7 @@ import { siteApi, useUtil } from 'awayto/hooks';
 export function Todos (): React.JSX.Element {
 
   const { setSnack } = useUtil();
-  const [postTodo] = siteApi.usePostTodoMutation();
+  const [postTodo] = siteApi.useTodoServicePostTodoMutation();
 
   const [todo, setTodo] = useState({
     task: ''

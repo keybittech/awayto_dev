@@ -3,8 +3,6 @@ title: "FAQ"
 weight: 3
 ---
 
-If you feel that this list doesn't answer your questions, please join the [discord](https://discord.gg/KzpcTrn5DQ) to suggest changes.
-
 ## What gets installed?
 You can review the [old installation guide](https://github.com/keybittech/awayto/blob/main/INSTALL.md) to get an idea of the more detailed changes the installation process applies to AWS. In general, after running the installer, the following resources will be deployed to AWS:
 

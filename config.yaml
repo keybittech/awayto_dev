@@ -11,16 +11,16 @@ Params:
 
 menu:
   main:
-    - identifier: docs/0.1.0
-      name: 0.1.0
-      url: /docs/0.1.0/
+    - identifier: docs/0.3.0
+      name: 0.3.0
+      url: /docs/0.3.0/
       weight: 010
     - identifier: docs/0.2.0
       name: 0.2.0
       url: /docs/0.2.0/
       weight: 020
-    - identifier: docs/0.3.0
-      name: 0.3.0
-      url: /docs/0.3.0/
+    - identifier: docs/0.1.0
+      name: 0.1.0
+      url: /docs/0.1.0/
       weight: 030
     
